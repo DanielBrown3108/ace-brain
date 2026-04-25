@@ -47,3 +47,30 @@ select u.id, l.slug, l.title, l.description, 'none', l.position, false from u, (
   ('cell-cycle', 'The Cell Cycle', 'Interphase, mitosis, and cytokinesis at a glance.', 3)
 ) as l(slug, title, description, position)
 on conflict (unit_id, slug) do nothing;
+
+-- A sample quiz question on the cell membrane lesson, just to demo the flow.
+do $$
+declare
+  q_id uuid;
+  l_id uuid;
+begin
+  select id into l_id from public.lessons where slug = 'cell-membrane' limit 1;
+  if l_id is null then
+    return;
+  end if;
+  if exists (select 1 from public.quiz_questions where lesson_id = l_id) then
+    return;
+  end if;
+  insert into public.quiz_questions (lesson_id, position, prompt, explanation)
+  values (
+    l_id, 1,
+    'Which type of transport across the cell membrane requires ATP?',
+    'Active transport moves substances against their concentration gradient and requires energy from ATP. Diffusion, facilitated diffusion, and osmosis are all passive.'
+  )
+  returning id into q_id;
+  insert into public.quiz_choices (question_id, position, body, is_correct) values
+    (q_id, 1, 'Simple diffusion', false),
+    (q_id, 2, 'Facilitated diffusion', false),
+    (q_id, 3, 'Active transport', true),
+    (q_id, 4, 'Osmosis', false);
+end $$;

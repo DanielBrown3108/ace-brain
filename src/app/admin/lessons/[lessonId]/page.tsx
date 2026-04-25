@@ -83,7 +83,15 @@ export default async function EditLessonPage({
       >
         &larr; All lessons
       </Link>
-      <h1 className="mt-4 text-2xl font-bold tracking-tight">Edit lesson</h1>
+      <div className="mt-4 flex items-center justify-between">
+        <h1 className="text-2xl font-bold tracking-tight">Edit lesson</h1>
+        <Link
+          href={`/admin/lessons/${lesson.id}/questions`}
+          className="rounded-full border border-neutral-300 px-4 py-1.5 text-sm hover:bg-neutral-50"
+        >
+          Manage questions &rarr;
+        </Link>
+      </div>
 
       <form action={updateLesson} className="mt-8 space-y-5">
         <input type="hidden" name="id" value={lesson.id} />

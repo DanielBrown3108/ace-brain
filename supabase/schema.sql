@@ -158,3 +158,64 @@ create policy "own bookings read" on public.tutoring_bookings
     or student_email = (select email from auth.users where id = auth.uid())
     or exists (select 1 from public.profiles p where p.id = auth.uid() and p.role = 'admin')
   );
+
+-- ===========================================================================
+-- Quiz questions (multiple choice, attached to a lesson).
+-- ===========================================================================
+create table if not exists public.quiz_questions (
+  id uuid primary key default gen_random_uuid(),
+  lesson_id uuid not null references public.lessons(id) on delete cascade,
+  position int not null default 0,
+  prompt text not null,
+  explanation text,
+  created_at timestamptz not null default now()
+);
+
+create table if not exists public.quiz_choices (
+  id uuid primary key default gen_random_uuid(),
+  question_id uuid not null references public.quiz_questions(id) on delete cascade,
+  position int not null default 0,
+  body text not null,
+  is_correct boolean not null default false
+);
+
+alter table public.quiz_questions enable row level security;
+alter table public.quiz_choices enable row level security;
+
+-- Anyone can read questions/choices for a published lesson; admins can read all.
+create policy "questions readable" on public.quiz_questions
+  for select using (
+    exists (
+      select 1 from public.lessons l
+      where l.id = quiz_questions.lesson_id
+      and (l.published or exists (
+        select 1 from public.profiles p where p.id = auth.uid() and p.role = 'admin'
+      ))
+    )
+  );
+
+create policy "choices readable" on public.quiz_choices
+  for select using (
+    exists (
+      select 1 from public.quiz_questions q
+      join public.lessons l on l.id = q.lesson_id
+      where q.id = quiz_choices.question_id
+      and (l.published or exists (
+        select 1 from public.profiles p where p.id = auth.uid() and p.role = 'admin'
+      ))
+    )
+  );
+
+create policy "admin writes questions" on public.quiz_questions
+  for all using (exists (
+    select 1 from public.profiles p where p.id = auth.uid() and p.role = 'admin'
+  )) with check (exists (
+    select 1 from public.profiles p where p.id = auth.uid() and p.role = 'admin'
+  ));
+
+create policy "admin writes choices" on public.quiz_choices
+  for all using (exists (
+    select 1 from public.profiles p where p.id = auth.uid() and p.role = 'admin'
+  )) with check (exists (
+    select 1 from public.profiles p where p.id = auth.uid() and p.role = 'admin'
+  ));

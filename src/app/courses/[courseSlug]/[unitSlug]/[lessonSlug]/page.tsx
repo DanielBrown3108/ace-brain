@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { VideoEmbed } from "@/components/VideoEmbed";
 import { MarkComplete } from "@/components/MarkComplete";
+import { Quiz, type QuizQuestion } from "@/components/Quiz";
 import type { Lesson } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
@@ -38,6 +39,26 @@ export default async function LessonPage({
   const course = Array.isArray(unit.courses) ? unit.courses[0] : unit.courses;
   const l = joined;
 
+  const { data: questionRows } = await supabase
+    .from("quiz_questions")
+    .select("id, prompt, explanation, position, quiz_choices(id, body, is_correct, position)")
+    .eq("lesson_id", l.id)
+    .order("position", { ascending: true });
+
+  const questions: QuizQuestion[] = (questionRows ?? []).map((q) => ({
+    id: q.id as string,
+    prompt: q.prompt as string,
+    explanation: (q.explanation as string | null) ?? null,
+    choices: ((q.quiz_choices ?? []) as Array<{
+      id: string;
+      body: string;
+      is_correct: boolean;
+      position: number;
+    }>)
+      .sort((a, b) => a.position - b.position)
+      .map((c) => ({ id: c.id, body: c.body, is_correct: c.is_correct })),
+  }));
+
   return (
     <article className="mx-auto max-w-4xl px-6 py-12">
       <Link
@@ -65,6 +86,8 @@ export default async function LessonPage({
           dangerouslySetInnerHTML={{ __html: l.notes_html }}
         />
       )}
+
+      <Quiz questions={questions} />
     </article>
   );
 }
