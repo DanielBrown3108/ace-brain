@@ -20,6 +20,11 @@ export async function Nav() {
           The Book
         </Link>
 
+        {user && (
+          <Link href="/dashboard" className="hover:underline">
+            Dashboard
+          </Link>
+        )}
         {profile?.role === "admin" && (
           <Link href="/admin" className="hover:underline">
             Admin

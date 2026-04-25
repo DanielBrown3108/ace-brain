@@ -49,25 +49,27 @@ export default async function AllLessonsPage() {
               : unit.courses
             : null;
           return (
-            <li
-              key={l.id}
-              className="flex items-center justify-between px-4 py-3"
-            >
-              <div>
-                <p className="font-medium">{l.title}</p>
-                <p className="text-xs text-neutral-500">
-                  {course?.title} — {unit?.title} · {l.video_source}
-                </p>
-              </div>
-              <span
-                className={`rounded-full px-3 py-0.5 text-xs ${
-                  l.published
-                    ? "bg-emerald-100 text-emerald-800"
-                    : "bg-neutral-100 text-neutral-600"
-                }`}
+            <li key={l.id}>
+              <Link
+                href={`/admin/lessons/${l.id}`}
+                className="flex items-center justify-between px-4 py-3 hover:bg-neutral-50"
               >
-                {l.published ? "Published" : "Draft"}
-              </span>
+                <div>
+                  <p className="font-medium">{l.title}</p>
+                  <p className="text-xs text-neutral-500">
+                    {course?.title} — {unit?.title} · {l.video_source}
+                  </p>
+                </div>
+                <span
+                  className={`rounded-full px-3 py-0.5 text-xs ${
+                    l.published
+                      ? "bg-emerald-100 text-emerald-800"
+                      : "bg-neutral-100 text-neutral-600"
+                  }`}
+                >
+                  {l.published ? "Published" : "Draft"}
+                </span>
+              </Link>
             </li>
           );
         })}
