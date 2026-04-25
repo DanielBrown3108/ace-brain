@@ -6,10 +6,38 @@ import { Nav } from "@/components/Nav";
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
 const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
 
+const SITE_TITLE = "Quarshie Academy — Visual Anatomy & Physiology";
+const SITE_DESCRIPTION =
+  "Master anatomy & physiology through mind mapping with Dr. Peter Quarshie. Free lessons, weekend 1-on-1 tutoring, and the Illustrated Mind Mapping for A&P companion course.";
+
 export const metadata: Metadata = {
-  title: "Quarshie Academy — Visual Anatomy & Physiology",
-  description:
-    "Master anatomy & physiology through mind mapping with Dr. Peter Quarshie. Free lessons, weekend 1-on-1 tutoring, and the Illustrated Mind Mapping for A&P companion course.",
+  title: {
+    default: SITE_TITLE,
+    template: "%s · Quarshie Academy",
+  },
+  description: SITE_DESCRIPTION,
+  applicationName: "Quarshie Academy",
+  authors: [{ name: "Dr. Peter Quarshie" }],
+  keywords: [
+    "anatomy",
+    "physiology",
+    "mind mapping",
+    "pre-med",
+    "nursing",
+    "A&P",
+    "Peter Quarshie",
+  ],
+  openGraph: {
+    type: "website",
+    siteName: "Quarshie Academy",
+    title: SITE_TITLE,
+    description: SITE_DESCRIPTION,
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: SITE_TITLE,
+    description: SITE_DESCRIPTION,
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
