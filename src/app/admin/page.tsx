@@ -42,21 +42,30 @@ export default async function AdminHome() {
 
       <div className="mt-10 grid gap-4 sm:grid-cols-2">
         <Link
-          href="/admin/lessons/new"
+          href="/admin/courses"
           className="rounded-2xl border border-neutral-200 p-6 hover:border-neutral-400"
         >
-          <h2 className="font-semibold">+ New lesson</h2>
+          <h2 className="font-semibold">Courses &amp; units</h2>
           <p className="mt-1 text-sm text-neutral-600">
-            Add a YouTube or Facebook video with notes.
+            Create courses, organize units, publish.
           </p>
         </Link>
         <Link
           href="/admin/lessons"
           className="rounded-2xl border border-neutral-200 p-6 hover:border-neutral-400"
         >
-          <h2 className="font-semibold">All lessons</h2>
+          <h2 className="font-semibold">Lessons</h2>
           <p className="mt-1 text-sm text-neutral-600">
-            Edit, reorder, publish, unpublish.
+            All lessons across the catalog.
+          </p>
+        </Link>
+        <Link
+          href="/admin/lessons/new"
+          className="rounded-2xl border border-neutral-200 p-6 hover:border-neutral-400"
+        >
+          <h2 className="font-semibold">+ New lesson</h2>
+          <p className="mt-1 text-sm text-neutral-600">
+            Add a YouTube or Facebook video with notes.
           </p>
         </Link>
       </div>

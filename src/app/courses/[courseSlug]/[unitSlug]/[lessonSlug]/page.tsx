@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { VideoEmbed } from "@/components/VideoEmbed";
+import { MarkComplete } from "@/components/MarkComplete";
 import type { Lesson } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
@@ -52,6 +53,10 @@ export default async function LessonPage({
 
       <div className="mt-8">
         <VideoEmbed source={l.video_source} url={l.video_url} title={l.title} />
+      </div>
+
+      <div className="mt-6">
+        <MarkComplete lessonId={l.id} />
       </div>
 
       {l.notes_html && (
