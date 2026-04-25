@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
-import { requireAdmin, slugify } from "@/lib/auth";
+import { requireAdmin, slugify, resolveFacebookShareUrl } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
 
@@ -19,7 +19,10 @@ async function updateLesson(formData: FormData) {
     | "youtube"
     | "facebook"
     | "none";
-  const video_url = String(formData.get("video_url") ?? "").trim() || null;
+  let video_url = String(formData.get("video_url") ?? "").trim() || null;
+  if (video_source === "facebook" && video_url) {
+    video_url = await resolveFacebookShareUrl(video_url);
+  }
   const notes_html = String(formData.get("notes_html") ?? "").trim() || null;
   const published = formData.get("published") === "on";
   const position = Number(formData.get("position") ?? 0) || 0;
