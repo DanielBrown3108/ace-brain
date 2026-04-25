@@ -1,4 +1,4 @@
-# Quarshie Academy
+# Ace Brain
 
 A Khan-Academy-style site for Dr. Peter Quarshie's *Illustrated Mind Mapping for Anatomy & Physiology*. Free lessons, weekend 1-on-1 tutoring, and a course catalog Peter manages himself.
 

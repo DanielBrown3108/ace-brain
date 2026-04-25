@@ -7,7 +7,7 @@ export async function Nav() {
   return (
     <nav className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
       <Link href="/" className="font-semibold tracking-tight">
-        Quarshie Academy
+        Ace Brain
       </Link>
       <div className="flex items-center gap-6 text-sm">
         <Link href="/courses" className="hover:underline">

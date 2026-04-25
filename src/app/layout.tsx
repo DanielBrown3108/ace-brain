@@ -6,17 +6,17 @@ import { Nav } from "@/components/Nav";
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
 const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
 
-const SITE_TITLE = "Quarshie Academy — Visual Anatomy & Physiology";
+const SITE_TITLE = "Ace Brain — Visual Anatomy & Physiology";
 const SITE_DESCRIPTION =
   "Master anatomy & physiology through mind mapping with Dr. Peter Quarshie. Free lessons, weekend 1-on-1 tutoring, and the Illustrated Mind Mapping for A&P companion course.";
 
 export const metadata: Metadata = {
   title: {
     default: SITE_TITLE,
-    template: "%s · Quarshie Academy",
+    template: "%s · Ace Brain",
   },
   description: SITE_DESCRIPTION,
-  applicationName: "Quarshie Academy",
+  applicationName: "Ace Brain",
   authors: [{ name: "Dr. Peter Quarshie" }],
   keywords: [
     "anatomy",
@@ -29,7 +29,7 @@ export const metadata: Metadata = {
   ],
   openGraph: {
     type: "website",
-    siteName: "Quarshie Academy",
+    siteName: "Ace Brain",
     title: SITE_TITLE,
     description: SITE_DESCRIPTION,
   },
