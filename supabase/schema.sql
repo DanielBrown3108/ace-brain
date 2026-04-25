@@ -92,53 +92,59 @@ alter table public.lessons enable row level security;
 alter table public.lesson_progress enable row level security;
 alter table public.tutoring_bookings enable row level security;
 
+-- SECURITY DEFINER helper to check admin status without re-triggering RLS
+-- on the profiles table (which would cause infinite recursion).
+create or replace function public.is_admin()
+returns boolean
+language sql
+security definer
+set search_path = public
+stable
+as $$
+  select exists (
+    select 1 from public.profiles where id = auth.uid() and role = 'admin'
+  );
+$$;
+
+drop policy if exists "courses readable" on public.courses;
+drop policy if exists "units readable" on public.units;
+drop policy if exists "lessons readable" on public.lessons;
+drop policy if exists "admin writes courses" on public.courses;
+drop policy if exists "admin writes units" on public.units;
+drop policy if exists "admin writes lessons" on public.lessons;
+drop policy if exists "own profile read" on public.profiles;
+drop policy if exists "own profile update" on public.profiles;
+drop policy if exists "own progress read" on public.lesson_progress;
+drop policy if exists "own progress write" on public.lesson_progress;
+drop policy if exists "own progress delete" on public.lesson_progress;
+drop policy if exists "own bookings read" on public.tutoring_bookings;
+
 -- Anyone (including anon) can read published catalog content.
 create policy "courses readable" on public.courses
-  for select using (published or auth.role() = 'authenticated' and exists (
-    select 1 from public.profiles p where p.id = auth.uid() and p.role = 'admin'
-  ));
+  for select using (published or public.is_admin());
 
 create policy "units readable" on public.units
   for select using (exists (
-    select 1 from public.courses c where c.id = units.course_id and (
-      c.published or exists (
-        select 1 from public.profiles p where p.id = auth.uid() and p.role = 'admin'
-      )
-    )
+    select 1 from public.courses c
+    where c.id = units.course_id and (c.published or public.is_admin())
   ));
 
 create policy "lessons readable" on public.lessons
-  for select using (published or exists (
-    select 1 from public.profiles p where p.id = auth.uid() and p.role = 'admin'
-  ));
+  for select using (published or public.is_admin());
 
 -- Only admins can write catalog rows.
 create policy "admin writes courses" on public.courses
-  for all using (exists (
-    select 1 from public.profiles p where p.id = auth.uid() and p.role = 'admin'
-  )) with check (exists (
-    select 1 from public.profiles p where p.id = auth.uid() and p.role = 'admin'
-  ));
+  for all using (public.is_admin()) with check (public.is_admin());
 
 create policy "admin writes units" on public.units
-  for all using (exists (
-    select 1 from public.profiles p where p.id = auth.uid() and p.role = 'admin'
-  )) with check (exists (
-    select 1 from public.profiles p where p.id = auth.uid() and p.role = 'admin'
-  ));
+  for all using (public.is_admin()) with check (public.is_admin());
 
 create policy "admin writes lessons" on public.lessons
-  for all using (exists (
-    select 1 from public.profiles p where p.id = auth.uid() and p.role = 'admin'
-  )) with check (exists (
-    select 1 from public.profiles p where p.id = auth.uid() and p.role = 'admin'
-  ));
+  for all using (public.is_admin()) with check (public.is_admin());
 
 -- Profiles: a user reads/updates their own row; admins read all.
 create policy "own profile read" on public.profiles
-  for select using (id = auth.uid() or exists (
-    select 1 from public.profiles p where p.id = auth.uid() and p.role = 'admin'
-  ));
+  for select using (id = auth.uid() or public.is_admin());
 create policy "own profile update" on public.profiles
   for update using (id = auth.uid());
 
@@ -156,7 +162,7 @@ create policy "own bookings read" on public.tutoring_bookings
   for select using (
     user_id = auth.uid()
     or student_email = (select email from auth.users where id = auth.uid())
-    or exists (select 1 from public.profiles p where p.id = auth.uid() and p.role = 'admin')
+    or public.is_admin()
   );
 
 -- ===========================================================================
@@ -182,15 +188,18 @@ create table if not exists public.quiz_choices (
 alter table public.quiz_questions enable row level security;
 alter table public.quiz_choices enable row level security;
 
+drop policy if exists "questions readable" on public.quiz_questions;
+drop policy if exists "choices readable" on public.quiz_choices;
+drop policy if exists "admin writes questions" on public.quiz_questions;
+drop policy if exists "admin writes choices" on public.quiz_choices;
+
 -- Anyone can read questions/choices for a published lesson; admins can read all.
 create policy "questions readable" on public.quiz_questions
   for select using (
     exists (
       select 1 from public.lessons l
       where l.id = quiz_questions.lesson_id
-      and (l.published or exists (
-        select 1 from public.profiles p where p.id = auth.uid() and p.role = 'admin'
-      ))
+      and (l.published or public.is_admin())
     )
   );
 
@@ -200,22 +209,12 @@ create policy "choices readable" on public.quiz_choices
       select 1 from public.quiz_questions q
       join public.lessons l on l.id = q.lesson_id
       where q.id = quiz_choices.question_id
-      and (l.published or exists (
-        select 1 from public.profiles p where p.id = auth.uid() and p.role = 'admin'
-      ))
+      and (l.published or public.is_admin())
     )
   );
 
 create policy "admin writes questions" on public.quiz_questions
-  for all using (exists (
-    select 1 from public.profiles p where p.id = auth.uid() and p.role = 'admin'
-  )) with check (exists (
-    select 1 from public.profiles p where p.id = auth.uid() and p.role = 'admin'
-  ));
+  for all using (public.is_admin()) with check (public.is_admin());
 
 create policy "admin writes choices" on public.quiz_choices
-  for all using (exists (
-    select 1 from public.profiles p where p.id = auth.uid() and p.role = 'admin'
-  )) with check (exists (
-    select 1 from public.profiles p where p.id = auth.uid() and p.role = 'admin'
-  ));
+  for all using (public.is_admin()) with check (public.is_admin());
