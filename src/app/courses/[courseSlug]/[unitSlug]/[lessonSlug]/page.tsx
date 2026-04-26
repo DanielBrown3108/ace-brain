@@ -60,6 +60,47 @@ export default async function LessonPage({
       .map((c) => ({ id: c.id, body: c.body, is_correct: c.is_correct })),
   }));
 
+  // Find the next published lesson in this course (next in unit, or first
+  // of the next unit). Used for the "Next lesson" link at the bottom.
+  const { data: courseFull } = await supabase
+    .from("courses")
+    .select(
+      "slug, units(slug, position, lessons(slug, title, position, published))"
+    )
+    .eq("slug", course.slug)
+    .maybeSingle();
+
+  const orderedLessons: Array<{
+    unitSlug: string;
+    lessonSlug: string;
+    title: string;
+  }> = ((courseFull?.units ?? []) as Array<{
+    slug: string;
+    position: number;
+    lessons: Array<{ slug: string; title: string; position: number; published: boolean }>;
+  }>)
+    .sort((a, b) => a.position - b.position)
+    .flatMap((u) =>
+      (u.lessons ?? [])
+        .filter((x) => x.published)
+        .sort((a, b) => a.position - b.position)
+        .map((x) => ({
+          unitSlug: u.slug,
+          lessonSlug: x.slug,
+          title: x.title,
+        }))
+    );
+
+  const currentIdx = orderedLessons.findIndex(
+    (x) => x.unitSlug === unitSlug && x.lessonSlug === lessonSlug
+  );
+  const nextLesson =
+    currentIdx >= 0 && currentIdx < orderedLessons.length - 1
+      ? orderedLessons[currentIdx + 1]
+      : null;
+  const prevLesson =
+    currentIdx > 0 ? orderedLessons[currentIdx - 1] : null;
+
   return (
     <article className="mx-auto max-w-4xl px-6 py-12">
       <Link
@@ -89,6 +130,43 @@ export default async function LessonPage({
       )}
 
       <Quiz questions={questions} />
+
+      <nav className="mt-12 flex flex-col gap-3 sm:flex-row sm:items-stretch sm:justify-between">
+        {prevLesson ? (
+          <Link
+            href={`/courses/${course.slug}/${prevLesson.unitSlug}/${prevLesson.lessonSlug}`}
+            className="flex-1 rounded-2xl border border-neutral-200 p-4 hover:border-neutral-400"
+          >
+            <p className="text-xs uppercase tracking-widest text-neutral-500">
+              &larr; Previous
+            </p>
+            <p className="mt-1 font-medium">{prevLesson.title}</p>
+          </Link>
+        ) : (
+          <div className="flex-1" />
+        )}
+        {nextLesson ? (
+          <Link
+            href={`/courses/${course.slug}/${nextLesson.unitSlug}/${nextLesson.lessonSlug}`}
+            className="flex-1 rounded-2xl border-2 border-blue-200 bg-blue-50 p-4 text-right hover:bg-blue-100"
+          >
+            <p className="text-xs uppercase tracking-widest text-blue-700">
+              Next &rarr;
+            </p>
+            <p className="mt-1 font-medium">{nextLesson.title}</p>
+          </Link>
+        ) : (
+          <Link
+            href={`/courses/${course.slug}`}
+            className="flex-1 rounded-2xl border border-neutral-200 p-4 text-right hover:bg-neutral-50"
+          >
+            <p className="text-xs uppercase tracking-widest text-neutral-500">
+              Course complete
+            </p>
+            <p className="mt-1 font-medium">Back to {course.title}</p>
+          </Link>
+        )}
+      </nav>
 
       <Discussion lessonId={l.id} />
     </article>
