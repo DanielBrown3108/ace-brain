@@ -33,7 +33,7 @@ export default function Home() {
                 href="/tutoring"
                 className="rounded-full border-2 border-blue-700 text-blue-700 px-6 py-3 font-medium hover:bg-blue-50 text-center"
               >
-                Book weekend tutoring
+                Book tutoring · $100 first session
               </Link>
             </div>
           </div>
@@ -71,7 +71,7 @@ export default function Home() {
             },
             {
               title: "1-on-1 with Dr. Quarshie",
-              body: "Weekend tutoring sessions for personalized guidance through tough topics.",
+              body: "Weekend tutoring sessions, $200 each ($100 your first time). Personalized guidance through tough topics.",
             },
           ].map((f) => (
             <div
