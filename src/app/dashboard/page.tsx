@@ -38,6 +38,51 @@ export default async function DashboardPage() {
     .order("completed_at", { ascending: false })
     .limit(10);
 
+  // Streak + counts. Pull all completion timestamps for derivation.
+  const { data: allProgress } = await supabase
+    .from("lesson_progress")
+    .select("completed_at");
+
+  const totalDone = (allProgress ?? []).length;
+
+  const sevenDaysAgo = new Date();
+  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+  const doneThisWeek = (allProgress ?? []).filter(
+    (r) => new Date(r.completed_at as string) >= sevenDaysAgo
+  ).length;
+
+  // Streak = consecutive days (counting today or yesterday as the start)
+  // with at least one completed lesson, walking backwards.
+  const dayKeys = new Set(
+    (allProgress ?? []).map((r) => {
+      const d = new Date(r.completed_at as string);
+      return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
+    })
+  );
+  function dayKey(d: Date) {
+    return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
+  }
+  let streak = 0;
+  const cursor = new Date();
+  // Allow today OR yesterday as the streak anchor (so missing today before
+  // bedtime doesn't reset the streak).
+  if (!dayKeys.has(dayKey(cursor))) {
+    cursor.setDate(cursor.getDate() - 1);
+    if (!dayKeys.has(dayKey(cursor))) {
+      streak = 0;
+    } else {
+      streak = 1;
+      cursor.setDate(cursor.getDate() - 1);
+    }
+  } else {
+    streak = 1;
+    cursor.setDate(cursor.getDate() - 1);
+  }
+  while (dayKeys.has(dayKey(cursor))) {
+    streak += 1;
+    cursor.setDate(cursor.getDate() - 1);
+  }
+
   const completedRows = (completed ?? []).map((r) => {
     const lesson = flattenJoined(
       r.lessons as unknown as LessonRow | LessonRow[]
@@ -105,6 +150,16 @@ export default async function DashboardPage() {
         Welcome back, {user.email}.
       </p>
 
+      <div className="mt-8 grid gap-4 sm:grid-cols-3">
+        <Stat
+          label="Day streak"
+          value={streak.toString()}
+          accent={streak > 0 ? "fire" : "muted"}
+        />
+        <Stat label="Lessons completed" value={totalDone.toString()} />
+        <Stat label="This week" value={doneThisWeek.toString()} />
+      </div>
+
       {nextUp ? (
         <Link
           href={`/courses/${nextUp.courseSlug}/${nextUp.unitSlug}/${nextUp.lessonSlug}`}
@@ -162,6 +217,31 @@ export default async function DashboardPage() {
           })}
         </ul>
       )}
+    </div>
+  );
+}
+
+function Stat({
+  label,
+  value,
+  accent = "muted",
+}: {
+  label: string;
+  value: string;
+  accent?: "fire" | "muted";
+}) {
+  return (
+    <div className="rounded-2xl border border-neutral-200 p-4">
+      <p className="text-xs font-medium uppercase tracking-widest text-neutral-500">
+        {label}
+      </p>
+      <p
+        className={`mt-1 text-3xl font-bold ${
+          accent === "fire" ? "text-red-600" : "text-neutral-900"
+        }`}
+      >
+        {accent === "fire" && value !== "0" ? `🔥 ${value}` : value}
+      </p>
     </div>
   );
 }
