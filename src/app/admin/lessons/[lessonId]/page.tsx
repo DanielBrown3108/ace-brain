@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { requireAdmin, slugify, resolveFacebookShareUrl } from "@/lib/auth";
+import { sendEmail, newLessonEmail } from "@/lib/email";
 
 export const dynamic = "force-dynamic";
 
@@ -27,6 +28,15 @@ async function updateLesson(formData: FormData) {
   const published = formData.get("published") === "on";
   const position = Number(formData.get("position") ?? 0) || 0;
 
+  // Detect publish-toggle (was draft, now published) so we can email
+  // students who've engaged with this course.
+  const { data: prev } = await supabase
+    .from("lessons")
+    .select("published")
+    .eq("id", id)
+    .maybeSingle();
+  const wasPublished = prev?.published === true;
+
   const { error } = await supabase
     .from("lessons")
     .update({
@@ -43,8 +53,96 @@ async function updateLesson(formData: FormData) {
     .eq("id", id);
   if (error) throw new Error(error.message);
 
+  if (published && !wasPublished) {
+    await notifyStudentsOfNewLesson(supabase, id);
+  }
+
   revalidatePath("/courses");
   redirect("/admin/lessons");
+}
+
+// Find students who've completed at least one lesson in this lesson's
+// course and email them about the new lesson. Pulls auth.users emails
+// via the service-role admin API since the requireAdmin client doesn't
+// have access to email addresses across users.
+async function notifyStudentsOfNewLesson(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  adminScopedSupabase: any,
+  lessonId: string
+) {
+  const { data: lesson } = await adminScopedSupabase
+    .from("lessons")
+    .select(
+      "id, slug, title, units!inner(slug, courses!inner(id, slug, title))"
+    )
+    .eq("id", lessonId)
+    .maybeSingle();
+  if (!lesson) return;
+
+  const unit = Array.isArray(lesson.units) ? lesson.units[0] : lesson.units;
+  const course = unit
+    ? Array.isArray(unit.courses)
+      ? unit.courses[0]
+      : unit.courses
+    : null;
+  if (!course || !unit) return;
+
+  // All lessons in this course.
+  const { data: courseLessons } = await adminScopedSupabase
+    .from("lessons")
+    .select("id, units!inner(course_id)")
+    .eq("units.course_id", course.id);
+  const lessonIds = (courseLessons ?? []).map((l: { id: string }) => l.id);
+  if (lessonIds.length === 0) return;
+
+  // Distinct user_ids who've completed any lesson in this course.
+  const { data: progressRows } = await adminScopedSupabase
+    .from("lesson_progress")
+    .select("user_id")
+    .in("lesson_id", lessonIds);
+  const userIds = Array.from(
+    new Set((progressRows ?? []).map((r: { user_id: string }) => r.user_id))
+  );
+  if (userIds.length === 0) return;
+
+  // Need an admin (service-role) client to read emails out of auth.users.
+  // Skip silently if the service key isn't configured.
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!url || !serviceKey) return;
+
+  const { createClient } = await import("@supabase/supabase-js");
+  const adminClient = createClient(url, serviceKey, {
+    auth: { autoRefreshToken: false, persistSession: false },
+  });
+
+  // Fetch up to 1000 auth users (free tier ceiling for small launches).
+  const { data: usersList } = await adminClient.auth.admin.listUsers({
+    perPage: 1000,
+  });
+  const emailById = new Map<string, string>();
+  for (const u of usersList?.users ?? []) {
+    if (u.email) emailById.set(u.id, u.email);
+  }
+  const recipients = userIds
+    .map((id) => emailById.get(id as string))
+    .filter((e): e is string => Boolean(e));
+
+  if (recipients.length === 0) return;
+
+  const SITE_URL =
+    process.env.NEXT_PUBLIC_SITE_URL ?? "https://ace-brain-seven.vercel.app";
+  const lessonUrl = `${SITE_URL}/courses/${course.slug}/${unit.slug}/${lesson.slug}`;
+  const { subject, html, text } = newLessonEmail({
+    lessonTitle: lesson.title,
+    courseTitle: course.title,
+    lessonUrl,
+  });
+  // Send individually so unsub later is per-user. Keep it simple (no
+  // batching) at low volume.
+  await Promise.all(
+    recipients.map((to) => sendEmail({ to, subject, html, text }))
+  );
 }
 
 async function deleteLesson(formData: FormData) {

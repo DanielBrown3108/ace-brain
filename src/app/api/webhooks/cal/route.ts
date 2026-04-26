@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createServerClient } from "@supabase/ssr";
+import { sendEmail, bookingConfirmationEmail } from "@/lib/email";
 
 export const dynamic = "force-dynamic";
 
@@ -120,6 +121,18 @@ export async function POST(request: Request) {
     },
     { onConflict: "cal_booking_id" }
   );
+
+  // Send a confirmation email on new bookings (Cal.com sends its own too,
+  // but ours is branded ACE Brain). Skip for reschedules to avoid noise.
+  if (triggerEvent === "BOOKING_CREATED") {
+    const { subject, html, text } = bookingConfirmationEmail({
+      studentName,
+      scheduledFor,
+      durationMinutes: minutes,
+      meetingUrl,
+    });
+    await sendEmail({ to: studentEmail, subject, html, text });
+  }
 
   return NextResponse.json({ ok: true });
 }
