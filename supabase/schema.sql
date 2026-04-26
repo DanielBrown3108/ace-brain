@@ -218,3 +218,52 @@ create policy "admin writes questions" on public.quiz_questions
 
 create policy "admin writes choices" on public.quiz_choices
   for all using (public.is_admin()) with check (public.is_admin());
+
+-- ===========================================================================
+-- Lesson discussion / Q&A
+-- ===========================================================================
+create table if not exists public.lesson_comments (
+  id uuid primary key default gen_random_uuid(),
+  lesson_id uuid not null references public.lessons(id) on delete cascade,
+  user_id uuid not null references auth.users(id) on delete cascade,
+  body text not null,
+  pinned boolean not null default false,
+  created_at timestamptz not null default now()
+);
+
+create index if not exists lesson_comments_lesson_id_idx
+  on public.lesson_comments(lesson_id, created_at desc);
+
+alter table public.lesson_comments enable row level security;
+
+drop policy if exists "comments readable" on public.lesson_comments;
+drop policy if exists "comments insert own" on public.lesson_comments;
+drop policy if exists "comments update own or admin" on public.lesson_comments;
+drop policy if exists "comments delete own or admin" on public.lesson_comments;
+
+-- Anyone can read comments on a published lesson; admins can read all.
+create policy "comments readable" on public.lesson_comments
+  for select using (
+    exists (
+      select 1 from public.lessons l
+      where l.id = lesson_comments.lesson_id
+      and (l.published or public.is_admin())
+    )
+  );
+
+-- Signed-in users can comment as themselves.
+create policy "comments insert own" on public.lesson_comments
+  for insert with check (
+    user_id = auth.uid()
+    and exists (
+      select 1 from public.lessons l where l.id = lesson_comments.lesson_id and l.published
+    )
+  );
+
+-- Authors can edit their own; admins can edit anything (e.g. to pin).
+create policy "comments update own or admin" on public.lesson_comments
+  for update using (user_id = auth.uid() or public.is_admin());
+
+-- Authors can delete their own; admins can delete any.
+create policy "comments delete own or admin" on public.lesson_comments
+  for delete using (user_id = auth.uid() or public.is_admin());

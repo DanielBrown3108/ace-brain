@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { VideoEmbed } from "@/components/VideoEmbed";
 import { MarkComplete } from "@/components/MarkComplete";
 import { Quiz, type QuizQuestion } from "@/components/Quiz";
+import { Discussion } from "@/components/Discussion";
 import type { Lesson } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
@@ -88,6 +89,8 @@ export default async function LessonPage({
       )}
 
       <Quiz questions={questions} />
+
+      <Discussion lessonId={l.id} />
     </article>
   );
 }
