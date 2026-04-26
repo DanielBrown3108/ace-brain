@@ -40,7 +40,19 @@ export default async function AdminHome() {
         Welcome, {profile.display_name ?? user.email}.
       </p>
 
-      <div className="mt-10 grid gap-4 sm:grid-cols-2">
+      <Link
+        href="/admin/help"
+        className="mt-8 block rounded-2xl border-2 border-blue-200 bg-blue-50 p-6 hover:bg-blue-100"
+      >
+        <p className="text-xs font-medium uppercase tracking-widest text-blue-700">
+          New here? Start with the guide
+        </p>
+        <p className="mt-2 text-lg font-semibold">
+          How to add lessons &amp; set up tutoring &rarr;
+        </p>
+      </Link>
+
+      <div className="mt-6 grid gap-4 sm:grid-cols-2">
         <Link
           href="/admin/courses"
           className="rounded-2xl border border-neutral-200 p-6 hover:border-neutral-400"
