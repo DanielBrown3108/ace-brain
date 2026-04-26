@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { computeBadges, type Badge } from "@/lib/badges";
 
 export const dynamic = "force-dynamic";
 
@@ -82,6 +83,77 @@ export default async function DashboardPage() {
     streak += 1;
     cursor.setDate(cursor.getDate() - 1);
   }
+
+  // Longest streak ever (for the badge), and most lessons in any single day.
+  const sortedDayKeys = Array.from(dayKeys).sort();
+  let longestStreak = 0;
+  let runStreak = 0;
+  let prevKey: string | null = null;
+  for (const key of sortedDayKeys) {
+    if (prevKey === null) {
+      runStreak = 1;
+    } else {
+      const [py, pm, pd] = prevKey.split("-").map(Number);
+      const prevDate = new Date(py, pm, pd);
+      prevDate.setDate(prevDate.getDate() + 1);
+      runStreak = dayKey(prevDate) === key ? runStreak + 1 : 1;
+    }
+    longestStreak = Math.max(longestStreak, runStreak);
+    prevKey = key;
+  }
+  longestStreak = Math.max(longestStreak, streak);
+
+  const dayCounts = new Map<string, number>();
+  for (const r of allProgress ?? []) {
+    const d = new Date(r.completed_at as string);
+    const key = dayKey(d);
+    dayCounts.set(key, (dayCounts.get(key) ?? 0) + 1);
+  }
+  const maxLessonsInOneDay =
+    dayCounts.size === 0 ? 0 : Math.max(...dayCounts.values());
+
+  // Comments posted by the user (RLS lets them see all on published lessons,
+  // but we filter to their own).
+  const { count: commentsPosted } = await supabase
+    .from("lesson_comments")
+    .select("id", { count: "exact", head: true })
+    .eq("user_id", user.id);
+
+  // A&P I scholar: completed every published lesson in the ap1 course.
+  const { data: ap1 } = await supabase
+    .from("courses")
+    .select(
+      "id, slug, units(id, lessons(id, published))"
+    )
+    .eq("slug", "ap1")
+    .maybeSingle();
+  const ap1Published = ((ap1?.units ?? []) as Array<{
+    lessons: Array<{ id: string; published: boolean }>;
+  }>).flatMap((u) => (u.lessons ?? []).filter((l) => l.published));
+  const doneIdSet = new Set(
+    (allProgress ?? []).map((p) => (p as { lesson_id?: string }).lesson_id)
+  );
+  // The allProgress query above doesn't include lesson_id; pull it for this
+  // calculation. Cheap because it's the same table.
+  const { data: progressIds } = await supabase
+    .from("lesson_progress")
+    .select("lesson_id");
+  const completedLessonIds = new Set(
+    (progressIds ?? []).map((p) => p.lesson_id as string)
+  );
+  const apOneCompleted =
+    ap1Published.length > 0 &&
+    ap1Published.every((l) => completedLessonIds.has(l.id));
+
+  const badges = computeBadges({
+    totalLessonsDone: totalDone,
+    currentStreak: streak,
+    longestStreak,
+    maxLessonsInOneDay,
+    commentsPosted: commentsPosted ?? 0,
+    apOneCompleted,
+  });
+  void doneIdSet; // unused: kept for clarity
 
   const completedRows = (completed ?? []).map((r) => {
     const lesson = flattenJoined(
@@ -186,6 +258,16 @@ export default async function DashboardPage() {
         </div>
       )}
 
+      <h2 className="mt-12 text-lg font-semibold">Badges</h2>
+      <p className="mt-1 text-sm text-neutral-500">
+        {badges.filter((b) => b.earned).length} of {badges.length} earned
+      </p>
+      <ul className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        {badges.map((b) => (
+          <BadgeCard key={b.id} badge={b} />
+        ))}
+      </ul>
+
       <h2 className="mt-12 text-lg font-semibold">Recently completed</h2>
       {completedRows.length === 0 ? (
         <p className="mt-3 text-sm text-neutral-500">Nothing yet.</p>
@@ -243,5 +325,43 @@ function Stat({
         {accent === "fire" && value !== "0" ? `🔥 ${value}` : value}
       </p>
     </div>
+  );
+}
+
+function BadgeCard({ badge }: { badge: Badge }) {
+  return (
+    <li
+      className={`rounded-2xl border p-4 transition ${
+        badge.earned
+          ? "border-blue-200 bg-blue-50"
+          : "border-neutral-200 bg-white opacity-60"
+      }`}
+      title={badge.description}
+    >
+      <div className="flex items-start gap-3">
+        <span className="text-3xl leading-none">{badge.emoji}</span>
+        <div className="flex-1 min-w-0">
+          <p className="text-sm font-semibold text-neutral-900">
+            {badge.title}
+          </p>
+          <p className="text-xs text-neutral-600 mt-0.5">{badge.description}</p>
+          {badge.progress && !badge.earned && (
+            <div className="mt-2">
+              <div className="h-1.5 w-full overflow-hidden rounded-full bg-neutral-100">
+                <div
+                  className="h-full bg-blue-700"
+                  style={{
+                    width: `${Math.round((badge.progress.current / badge.progress.goal) * 100)}%`,
+                  }}
+                />
+              </div>
+              <p className="mt-1 text-[10px] text-neutral-500">
+                {badge.progress.current} / {badge.progress.goal}
+              </p>
+            </div>
+          )}
+        </div>
+      </div>
+    </li>
   );
 }

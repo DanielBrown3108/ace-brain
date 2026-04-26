@@ -42,7 +42,9 @@ export default async function LessonPage({
 
   const { data: questionRows } = await supabase
     .from("quiz_questions")
-    .select("id, prompt, explanation, position, quiz_choices(id, body, is_correct, position)")
+    .select(
+      "id, prompt, explanation, position, question_type, answer_key, quiz_choices(id, body, is_correct, position)"
+    )
     .eq("lesson_id", l.id)
     .order("position", { ascending: true });
 
@@ -50,6 +52,11 @@ export default async function LessonPage({
     id: q.id as string,
     prompt: q.prompt as string,
     explanation: (q.explanation as string | null) ?? null,
+    question_type:
+      ((q.question_type as string) ?? "multiple_choice") as
+        | "multiple_choice"
+        | "short_answer",
+    answer_key: (q.answer_key as string | null) ?? null,
     choices: ((q.quiz_choices ?? []) as Array<{
       id: string;
       body: string;

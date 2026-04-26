@@ -32,6 +32,7 @@ async function createQuestion(formData: FormData) {
       lesson_id,
       prompt,
       explanation,
+      question_type: "multiple_choice",
       position: (count ?? 0) + 1,
     })
     .select("id")
@@ -47,6 +48,38 @@ async function createQuestion(formData: FormData) {
   }));
   const { error: cErr } = await supabase.from("quiz_choices").insert(choiceRows);
   if (cErr) throw new Error(cErr.message);
+
+  revalidatePath(`/admin/lessons/${lesson_id}/questions`);
+  redirect(`/admin/lessons/${lesson_id}/questions`);
+}
+
+async function createShortAnswer(formData: FormData) {
+  "use server";
+  const { supabase } = await requireAdmin();
+
+  const lesson_id = String(formData.get("lesson_id") ?? "");
+  const prompt = String(formData.get("prompt") ?? "").trim();
+  const answer_key = String(formData.get("answer_key") ?? "").trim();
+  const explanation = String(formData.get("explanation") ?? "").trim() || null;
+
+  if (!prompt || !answer_key) {
+    throw new Error("Need a prompt and at least one accepted answer.");
+  }
+
+  const { count } = await supabase
+    .from("quiz_questions")
+    .select("id", { count: "exact", head: true })
+    .eq("lesson_id", lesson_id);
+
+  const { error } = await supabase.from("quiz_questions").insert({
+    lesson_id,
+    prompt,
+    explanation,
+    question_type: "short_answer",
+    answer_key,
+    position: (count ?? 0) + 1,
+  });
+  if (error) throw new Error(error.message);
 
   revalidatePath(`/admin/lessons/${lesson_id}/questions`);
   redirect(`/admin/lessons/${lesson_id}/questions`);
@@ -81,7 +114,9 @@ export default async function LessonQuestionsPage({
 
   const { data: questions } = await supabase
     .from("quiz_questions")
-    .select("id, prompt, explanation, position, quiz_choices(id, body, is_correct, position)")
+    .select(
+      "id, prompt, explanation, position, question_type, answer_key, quiz_choices(id, body, is_correct, position)"
+    )
     .eq("lesson_id", lesson.id)
     .order("position", { ascending: true });
 
@@ -104,6 +139,7 @@ export default async function LessonQuestionsPage({
           </li>
         )}
         {questions?.map((q) => {
+          const isShort = (q.question_type as string) === "short_answer";
           const choices = ((q.quiz_choices ?? []) as Array<{
             id: string;
             body: string;
@@ -115,22 +151,42 @@ export default async function LessonQuestionsPage({
               key={q.id}
               className="rounded-xl border border-neutral-200 p-4"
             >
-              <p className="font-medium">{q.prompt}</p>
-              <ul className="mt-3 space-y-1 text-sm">
-                {choices.map((c, i) => (
-                  <li
-                    key={c.id}
-                    className={
-                      c.is_correct
-                        ? "text-blue-700 font-medium"
-                        : "text-neutral-700"
-                    }
-                  >
-                    {String.fromCharCode(65 + i)}. {c.body}
-                    {c.is_correct && " ✓"}
-                  </li>
-                ))}
-              </ul>
+              <div className="flex items-start justify-between gap-3">
+                <p className="font-medium">{q.prompt}</p>
+                <span
+                  className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider ${
+                    isShort
+                      ? "bg-amber-100 text-amber-800"
+                      : "bg-blue-100 text-blue-800"
+                  }`}
+                >
+                  {isShort ? "Short" : "Multi"}
+                </span>
+              </div>
+              {isShort ? (
+                <p className="mt-3 text-sm">
+                  <span className="text-neutral-500">Accepts: </span>
+                  <span className="text-blue-700 font-medium">
+                    {(q.answer_key as string | null) ?? "(none)"}
+                  </span>
+                </p>
+              ) : (
+                <ul className="mt-3 space-y-1 text-sm">
+                  {choices.map((c, i) => (
+                    <li
+                      key={c.id}
+                      className={
+                        c.is_correct
+                          ? "text-blue-700 font-medium"
+                          : "text-neutral-700"
+                      }
+                    >
+                      {String.fromCharCode(65 + i)}. {c.body}
+                      {c.is_correct && " ✓"}
+                    </li>
+                  ))}
+                </ul>
+              )}
               {q.explanation && (
                 <p className="mt-3 text-xs text-neutral-500">
                   <span className="font-medium">Why: </span>
@@ -152,7 +208,7 @@ export default async function LessonQuestionsPage({
         })}
       </ul>
 
-      <h2 className="mt-12 text-lg font-semibold">Add a question</h2>
+      <h2 className="mt-12 text-lg font-semibold">Add a multiple-choice question</h2>
       <form action={createQuestion} className="mt-4 space-y-4">
         <input type="hidden" name="lesson_id" value={lesson.id} />
 
@@ -200,6 +256,49 @@ export default async function LessonQuestionsPage({
           className="rounded-full bg-blue-700 px-5 py-2 font-medium text-white hover:bg-blue-800"
         >
           Add question
+        </button>
+      </form>
+
+      <h2 className="mt-12 text-lg font-semibold">Add a short-answer question</h2>
+      <p className="mt-1 text-sm text-neutral-600">
+        Student types in their answer; we check it against your accepted
+        answers (case-insensitive). Use <code className="rounded bg-neutral-100 px-1">|</code> to
+        list multiple acceptable answers.
+      </p>
+      <form action={createShortAnswer} className="mt-4 space-y-4">
+        <input type="hidden" name="lesson_id" value={lesson.id} />
+
+        <Field label="Question prompt">
+          <textarea
+            name="prompt"
+            required
+            rows={2}
+            className="w-full rounded-lg border border-neutral-300 px-3 py-2"
+          />
+        </Field>
+
+        <Field label="Accepted answers (separate multiple with |)">
+          <input
+            name="answer_key"
+            required
+            placeholder="mitochondria | mitochondrion"
+            className="w-full rounded-lg border border-neutral-300 px-3 py-2"
+          />
+        </Field>
+
+        <Field label="Explanation (shown after the student answers)">
+          <textarea
+            name="explanation"
+            rows={3}
+            className="w-full rounded-lg border border-neutral-300 px-3 py-2"
+          />
+        </Field>
+
+        <button
+          type="submit"
+          className="rounded-full bg-blue-700 px-5 py-2 font-medium text-white hover:bg-blue-800"
+        >
+          Add short-answer question
         </button>
       </form>
     </div>

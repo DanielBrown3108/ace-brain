@@ -177,6 +177,20 @@ create table if not exists public.quiz_questions (
   created_at timestamptz not null default now()
 );
 
+-- Add type + answer_key for short-answer questions (additive migration).
+alter table public.quiz_questions
+  add column if not exists question_type text not null default 'multiple_choice';
+
+do $$ begin
+  alter table public.quiz_questions
+    add constraint quiz_questions_type_check
+    check (question_type in ('multiple_choice', 'short_answer'));
+exception when duplicate_object then null;
+end $$;
+
+alter table public.quiz_questions
+  add column if not exists answer_key text;
+
 create table if not exists public.quiz_choices (
   id uuid primary key default gen_random_uuid(),
   question_id uuid not null references public.quiz_questions(id) on delete cascade,
