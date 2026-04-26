@@ -108,9 +108,9 @@ export default async function DashboardPage() {
       {nextUp ? (
         <Link
           href={`/courses/${nextUp.courseSlug}/${nextUp.unitSlug}/${nextUp.lessonSlug}`}
-          className="mt-8 block rounded-2xl border border-emerald-200 bg-emerald-50 p-6 hover:bg-emerald-100"
+          className="mt-8 block rounded-2xl border border-blue-200 bg-blue-50 p-6 hover:bg-blue-100"
         >
-          <p className="text-xs font-medium uppercase tracking-widest text-emerald-700">
+          <p className="text-xs font-medium uppercase tracking-widest text-blue-700">
             Continue learning
           </p>
           <p className="mt-2 text-xl font-semibold">{nextUp.title}</p>
@@ -124,7 +124,7 @@ export default async function DashboardPage() {
           </p>
           <Link
             href="/courses"
-            className="mt-4 inline-block rounded-full bg-emerald-700 px-5 py-2 text-sm font-medium text-white hover:bg-emerald-800"
+            className="mt-4 inline-block rounded-full bg-blue-700 px-5 py-2 text-sm font-medium text-white hover:bg-blue-800"
           >
             Browse courses
           </Link>

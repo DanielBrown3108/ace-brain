@@ -28,7 +28,7 @@ export default async function AllLessonsPage() {
         <h1 className="text-2xl font-bold tracking-tight">Lessons</h1>
         <Link
           href="/admin/lessons/new"
-          className="rounded-full bg-emerald-700 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-800"
+          className="rounded-full bg-blue-700 px-4 py-2 text-sm font-medium text-white hover:bg-blue-800"
         >
           + New lesson
         </Link>
@@ -63,7 +63,7 @@ export default async function AllLessonsPage() {
                 <span
                   className={`rounded-full px-3 py-0.5 text-xs ${
                     l.published
-                      ? "bg-emerald-100 text-emerald-800"
+                      ? "bg-blue-100 text-blue-800"
                       : "bg-neutral-100 text-neutral-600"
                   }`}
                 >

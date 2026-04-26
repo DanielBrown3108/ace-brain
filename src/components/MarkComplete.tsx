@@ -89,8 +89,8 @@ export function MarkComplete({ lessonId }: Props) {
       disabled={state === "saving"}
       className={`inline-flex items-center gap-2 rounded-full px-5 py-2 text-sm font-medium transition ${
         state === "complete"
-          ? "bg-emerald-100 text-emerald-800 hover:bg-emerald-200"
-          : "bg-emerald-700 text-white hover:bg-emerald-800"
+          ? "bg-blue-100 text-blue-800 hover:bg-blue-200"
+          : "bg-blue-700 text-white hover:bg-blue-800"
       } disabled:opacity-50`}
     >
       {state === "complete" ? "✓ Completed" : "Mark complete"}

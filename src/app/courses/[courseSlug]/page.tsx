@@ -62,7 +62,7 @@ export default async function CoursePage({
           </div>
           <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-neutral-100">
             <div
-              className="h-full bg-emerald-700"
+              className="h-full bg-blue-700"
               style={{ width: `${overallPct}%` }}
             />
           </div>
@@ -103,7 +103,7 @@ export default async function CoursePage({
                           <span
                             className={`mr-3 inline-flex h-5 w-5 items-center justify-center rounded-full text-xs ${
                               done
-                                ? "bg-emerald-700 text-white"
+                                ? "bg-blue-700 text-white"
                                 : "bg-neutral-100 text-neutral-400"
                             }`}
                           >

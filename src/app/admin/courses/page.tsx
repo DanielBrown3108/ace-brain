@@ -76,7 +76,7 @@ export default async function AdminCoursesPage() {
                 type="submit"
                 className={`rounded-full px-3 py-1 text-xs ${
                   c.published
-                    ? "bg-emerald-100 text-emerald-800 hover:bg-emerald-200"
+                    ? "bg-blue-100 text-blue-800 hover:bg-blue-200"
                     : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200"
                 }`}
               >
@@ -112,7 +112,7 @@ export default async function AdminCoursesPage() {
         </label>
         <button
           type="submit"
-          className="rounded-full bg-emerald-700 px-5 py-2 font-medium text-white hover:bg-emerald-800"
+          className="rounded-full bg-blue-700 px-5 py-2 font-medium text-white hover:bg-blue-800"
         >
           Create course
         </button>

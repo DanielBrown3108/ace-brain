@@ -194,7 +194,7 @@ export default async function EditLessonPage({
         <div className="flex items-center justify-between pt-2">
           <button
             type="submit"
-            className="rounded-full bg-emerald-700 px-6 py-2.5 font-medium text-white hover:bg-emerald-800"
+            className="rounded-full bg-blue-700 px-6 py-2.5 font-medium text-white hover:bg-blue-800"
           >
             Save changes
           </button>

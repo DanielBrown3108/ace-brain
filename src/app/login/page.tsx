@@ -46,12 +46,12 @@ export default function LoginPage() {
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           placeholder="you@example.com"
-          className="w-full rounded-lg border border-neutral-300 px-4 py-3 outline-none focus:border-emerald-700"
+          className="w-full rounded-lg border border-neutral-300 px-4 py-3 outline-none focus:border-blue-700"
         />
         <button
           type="submit"
           disabled={status === "sending" || status === "sent"}
-          className="w-full rounded-lg bg-emerald-700 px-4 py-3 font-medium text-white hover:bg-emerald-800 disabled:opacity-50"
+          className="w-full rounded-lg bg-blue-700 px-4 py-3 font-medium text-white hover:bg-blue-800 disabled:opacity-50"
         >
           {status === "sending"
             ? "Sending..."
@@ -61,7 +61,7 @@ export default function LoginPage() {
         </button>
         {error && <p className="text-sm text-red-600">{error}</p>}
         {status === "sent" && (
-          <p className="text-sm text-emerald-700">
+          <p className="text-sm text-blue-700">
             Magic link sent to {email}.
           </p>
         )}

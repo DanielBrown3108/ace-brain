@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { getCurrentProfile } from "@/lib/auth";
 
@@ -6,27 +7,37 @@ export async function Nav() {
 
   return (
     <nav className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
-      <Link href="/" className="font-semibold tracking-tight">
-        Ace Brain
+      <Link href="/" className="flex items-center gap-2">
+        <Image
+          src="/brand/logo.png"
+          alt=""
+          width={36}
+          height={36}
+          className="h-9 w-9 object-contain"
+          priority
+        />
+        <span className="font-semibold tracking-tight text-blue-700">
+          ACE Brain
+        </span>
       </Link>
       <div className="flex items-center gap-6 text-sm">
-        <Link href="/courses" className="hover:underline">
+        <Link href="/courses" className="hover:text-blue-700">
           Courses
         </Link>
-        <Link href="/tutoring" className="hover:underline">
+        <Link href="/tutoring" className="hover:text-blue-700">
           Tutoring
         </Link>
-        <Link href="/book" className="hover:underline">
+        <Link href="/book" className="hover:text-blue-700">
           The Book
         </Link>
 
         {user && (
-          <Link href="/dashboard" className="hover:underline">
+          <Link href="/dashboard" className="hover:text-blue-700">
             Dashboard
           </Link>
         )}
         {profile?.role === "admin" && (
-          <Link href="/admin" className="hover:underline">
+          <Link href="/admin" className="hover:text-blue-700">
             Admin
           </Link>
         )}
@@ -44,7 +55,7 @@ export async function Nav() {
         ) : (
           <Link
             href="/login"
-            className="rounded-full bg-neutral-900 px-4 py-1.5 text-white hover:bg-neutral-700"
+            className="rounded-full bg-blue-700 px-4 py-1.5 text-white hover:bg-blue-800"
           >
             Sign in
           </Link>

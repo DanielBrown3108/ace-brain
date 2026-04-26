@@ -69,7 +69,7 @@ function Question({
               key={c.id}
               className={`flex cursor-pointer items-center gap-3 rounded-lg border px-3 py-2 text-sm transition ${
                 showCorrect
-                  ? "border-emerald-500 bg-emerald-50"
+                  ? "border-blue-500 bg-blue-50"
                   : showWrongPick
                     ? "border-red-400 bg-red-50"
                     : isSelected
@@ -85,11 +85,11 @@ function Question({
                 onChange={() => {
                   if (!submitted) setSelected(c.id);
                 }}
-                className="accent-emerald-700"
+                className="accent-blue-700"
               />
               <span>{c.body}</span>
               {showCorrect && (
-                <span className="ml-auto text-xs font-medium text-emerald-700">
+                <span className="ml-auto text-xs font-medium text-blue-700">
                   Correct
                 </span>
               )}
@@ -109,7 +109,7 @@ function Question({
             type="button"
             disabled={!selected}
             onClick={() => setSubmitted(true)}
-            className="rounded-full bg-emerald-700 px-5 py-2 text-sm font-medium text-white hover:bg-emerald-800 disabled:opacity-50"
+            className="rounded-full bg-blue-700 px-5 py-2 text-sm font-medium text-white hover:bg-blue-800 disabled:opacity-50"
           >
             Check answer
           </button>
@@ -128,7 +128,7 @@ function Question({
         {submitted && (
           <span
             className={`text-sm font-medium ${
-              isCorrect ? "text-emerald-700" : "text-red-700"
+              isCorrect ? "text-blue-700" : "text-red-700"
             }`}
           >
             {isCorrect ? "Nice." : "Read the explanation below."}

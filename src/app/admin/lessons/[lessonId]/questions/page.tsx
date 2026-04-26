@@ -122,7 +122,7 @@ export default async function LessonQuestionsPage({
                     key={c.id}
                     className={
                       c.is_correct
-                        ? "text-emerald-700 font-medium"
+                        ? "text-blue-700 font-medium"
                         : "text-neutral-700"
                     }
                   >
@@ -176,7 +176,7 @@ export default async function LessonQuestionsPage({
                 name="correct"
                 value={i}
                 defaultChecked={i === 1}
-                className="accent-emerald-700"
+                className="accent-blue-700"
               />
               <input
                 name={`choice_${i}`}
@@ -197,7 +197,7 @@ export default async function LessonQuestionsPage({
 
         <button
           type="submit"
-          className="rounded-full bg-emerald-700 px-5 py-2 font-medium text-white hover:bg-emerald-800"
+          className="rounded-full bg-blue-700 px-5 py-2 font-medium text-white hover:bg-blue-800"
         >
           Add question
         </button>
