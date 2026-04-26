@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import Link from "next/link";
 import "./globals.css";
 import { Nav } from "@/components/Nav";
 
@@ -51,8 +52,35 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <Nav />
         </header>
         <main className="flex-1">{children}</main>
-        <footer className="border-t border-neutral-200 py-8 text-center text-sm text-neutral-500">
-          &copy; {new Date().getFullYear()} Dr. Peter Quarshie
+        <footer className="border-t border-neutral-200 mt-16 py-10 text-sm text-neutral-500">
+          <div className="mx-auto flex max-w-6xl flex-col items-center gap-4 px-6 sm:flex-row sm:justify-between">
+            <p>
+              &copy; {new Date().getFullYear()} Dr. Peter Amua-Quarshie ·
+              ACE Brain
+            </p>
+            <ul className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2">
+              <li>
+                <Link href="/courses" className="hover:text-blue-700">
+                  Courses
+                </Link>
+              </li>
+              <li>
+                <Link href="/tutoring" className="hover:text-blue-700">
+                  Tutoring
+                </Link>
+              </li>
+              <li>
+                <Link href="/book" className="hover:text-blue-700">
+                  The Book
+                </Link>
+              </li>
+              <li>
+                <Link href="/about" className="hover:text-blue-700">
+                  About
+                </Link>
+              </li>
+            </ul>
+          </div>
         </footer>
       </body>
     </html>
