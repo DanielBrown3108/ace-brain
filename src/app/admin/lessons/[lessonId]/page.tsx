@@ -110,7 +110,7 @@ export default async function EditLessonPage({
               const c = Array.isArray(u.courses) ? u.courses[0] : u.courses;
               return (
                 <option key={u.id} value={u.id}>
-                  {(c as { title: string } | null)?.title} — {u.title}
+                  {(c as { title: string } | null)?.title} · {u.title}
                 </option>
               );
             })}
@@ -205,7 +205,7 @@ export default async function EditLessonPage({
 
       <details className="rounded-xl border border-red-200 bg-red-50 p-4">
         <summary className="cursor-pointer text-sm font-medium text-red-800">
-          Danger zone — delete this lesson
+          Danger zone: delete this lesson
         </summary>
         <p className="mt-2 text-sm text-red-700">
           Deleting this lesson also removes all student progress rows for it.

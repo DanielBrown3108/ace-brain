@@ -57,7 +57,7 @@ export default async function AllLessonsPage() {
                 <div>
                   <p className="font-medium">{l.title}</p>
                   <p className="text-xs text-neutral-500">
-                    {course?.title} — {unit?.title} · {l.video_source}
+                    {course?.title} · {unit?.title} · {l.video_source}
                   </p>
                 </div>
                 <span

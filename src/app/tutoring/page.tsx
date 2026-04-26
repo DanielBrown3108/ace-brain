@@ -18,7 +18,7 @@ export default function TutoringPage() {
       <div className="mt-10 grid gap-4 sm:grid-cols-2">
         <div className="rounded-2xl border-2 border-red-500 bg-red-50 p-6">
           <p className="text-xs font-medium uppercase tracking-widest text-red-600">
-            First session — 50% off
+            First session · 50% off
           </p>
           <p className="mt-2 text-4xl font-bold text-[#7a1f22]">
             $100

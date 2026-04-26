@@ -6,7 +6,7 @@ import { Nav } from "@/components/Nav";
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
 const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
 
-const SITE_TITLE = "Ace Brain — Visual Anatomy & Physiology";
+const SITE_TITLE = "Ace Brain · Visual Anatomy & Physiology";
 const SITE_DESCRIPTION =
   "Master anatomy & physiology through mind mapping with Dr. Peter Quarshie. Free lessons, weekend 1-on-1 tutoring, and the Illustrated Mind Mapping for A&P companion course.";
 

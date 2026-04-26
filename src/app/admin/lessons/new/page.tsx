@@ -79,7 +79,7 @@ export default async function NewLessonPage() {
               const course = Array.isArray(u.courses) ? u.courses[0] : u.courses;
               return (
                 <option key={u.id} value={u.id}>
-                  {(course as { title: string } | null)?.title} — {u.title}
+                  {(course as { title: string } | null)?.title} · {u.title}
                 </option>
               );
             })}

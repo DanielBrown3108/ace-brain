@@ -10,7 +10,7 @@ export default function NotFound() {
         Page not found
       </h1>
       <p className="mt-3 text-neutral-600">
-        That lesson, course, or page doesn&apos;t exist — it might be in draft,
+        That lesson, course, or page doesn&apos;t exist. It might be in draft,
         moved, or gone.
       </p>
       <div className="mt-8 flex justify-center gap-3">

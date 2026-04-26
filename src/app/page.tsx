@@ -4,7 +4,7 @@ import Link from "next/link";
 export default function Home() {
   return (
     <>
-      {/* Hero — cream/parchment panel echoing the book cover */}
+      {/* Hero: cream/parchment panel echoing the book cover */}
       <section className="bg-[#f5ede0]">
         <div className="mx-auto grid max-w-6xl items-center gap-12 px-6 py-20 md:grid-cols-[1.2fr_1fr]">
           <div>
@@ -46,7 +46,7 @@ export default function Home() {
             >
               <Image
                 src="/brand/book-cover.jpg"
-                alt="Illustrated Mind Mapping for Anatomy & Physiology — book cover"
+                alt="Illustrated Mind Mapping for Anatomy & Physiology book cover"
                 width={500}
                 height={750}
                 className="rounded-lg shadow-2xl"
@@ -105,7 +105,7 @@ export default function Home() {
             <p className="mt-4 text-neutral-700 leading-relaxed">
               Anatomy &amp; physiology educator and physician. Peter has spent
               years helping pre-med, medical, and nursing students see beyond
-              the textbook — turning dense material into structured, memorable
+              the textbook, turning dense material into structured, memorable
               visual maps. ACE Brain is the home for his lessons, his book, and
               his weekend tutoring.
             </p>

@@ -36,7 +36,7 @@ export default function LoginPage() {
     <div className="mx-auto max-w-md px-6 py-20">
       <h1 className="text-2xl font-bold tracking-tight">Sign in</h1>
       <p className="mt-2 text-sm text-neutral-600">
-        We&apos;ll email you a magic link — no password needed.
+        We&apos;ll email you a magic link. No password needed.
       </p>
 
       <form onSubmit={onSubmit} className="mt-8 space-y-4">

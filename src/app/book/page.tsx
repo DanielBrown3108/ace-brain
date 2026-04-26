@@ -7,7 +7,7 @@ export default function BookPage() {
       <div className="mx-auto grid max-w-6xl items-start gap-12 px-6 py-20 md:grid-cols-[auto_1fr]">
         <Image
           src="/brand/book-cover.jpg"
-          alt="Illustrated Mind Mapping for Anatomy & Physiology — book cover"
+          alt="Illustrated Mind Mapping for Anatomy & Physiology book cover"
           width={500}
           height={750}
           className="w-full max-w-sm rounded-lg shadow-2xl md:w-80"
