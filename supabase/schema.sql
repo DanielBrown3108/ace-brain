@@ -267,3 +267,30 @@ create policy "comments update own or admin" on public.lesson_comments
 -- Authors can delete their own; admins can delete any.
 create policy "comments delete own or admin" on public.lesson_comments
   for delete using (user_id = auth.uid() or public.is_admin());
+
+-- ===========================================================================
+-- Storage bucket for course cover images.
+-- Public read so the browser can render covers without auth; admin-only
+-- write so randos can't overwrite Peter's catalog art.
+-- ===========================================================================
+insert into storage.buckets (id, name, public)
+values ('course-covers', 'course-covers', true)
+on conflict (id) do nothing;
+
+drop policy if exists "course covers public read" on storage.objects;
+drop policy if exists "admin uploads course covers" on storage.objects;
+drop policy if exists "admin updates course covers" on storage.objects;
+drop policy if exists "admin deletes course covers" on storage.objects;
+
+create policy "course covers public read" on storage.objects
+  for select using (bucket_id = 'course-covers');
+
+create policy "admin uploads course covers" on storage.objects
+  for insert with check (bucket_id = 'course-covers' and public.is_admin());
+
+create policy "admin updates course covers" on storage.objects
+  for update using (bucket_id = 'course-covers' and public.is_admin())
+  with check (bucket_id = 'course-covers' and public.is_admin());
+
+create policy "admin deletes course covers" on storage.objects
+  for delete using (bucket_id = 'course-covers' and public.is_admin());

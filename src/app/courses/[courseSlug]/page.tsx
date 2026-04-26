@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
@@ -43,11 +44,25 @@ export default async function CoursePage({
     : 0;
 
   return (
-    <div className="mx-auto max-w-4xl px-6 py-16">
+    <div className="mx-auto max-w-4xl px-6 py-12">
       <Link href="/courses" className="text-sm text-neutral-500 hover:underline">
         &larr; All courses
       </Link>
-      <h1 className="mt-4 text-3xl font-bold tracking-tight">{course.title}</h1>
+
+      {course.cover_image_url && (
+        <div className="mt-6 aspect-video w-full overflow-hidden rounded-2xl bg-[#f5ede0]">
+          <Image
+            src={course.cover_image_url}
+            alt=""
+            width={1200}
+            height={675}
+            className="h-full w-full object-cover"
+            priority
+          />
+        </div>
+      )}
+
+      <h1 className="mt-6 text-3xl font-bold tracking-tight">{course.title}</h1>
       {course.description && (
         <p className="mt-2 text-neutral-600">{course.description}</p>
       )}
